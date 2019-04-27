@@ -1,6 +1,17 @@
 # Create a class to hold a city location. Call the class "City". It should have
 # fields for name, latitude, and longitude.
+class City:
+  def __init__(self, name, latitude, longitude):
+    self.name = name
+    self.lat = latitude
+    self.lon = longitude
 
+  def __str__(self):
+    return f'City(name: {self.name}, lat: {self.lat}, lon: {self.lon})'
+
+  def falls_within(self, square):
+    point = Point(self.lon, self.lat)
+    return square.contains(point)
 
 # We have a collection of US cities with population over 750,000 stored in the
 # file "cities.csv". (CSV stands for "comma-separated values".)
@@ -16,15 +27,24 @@
 # should not be loaded into a City object.
 cities = []
 
+import csv
 def cityreader(cities=[]):
   # TODO Implement the functionality to read from the 'cities.csv' file
   # For each city record, create a new City instance and add it to the 
   # `cities` list
+  cities = []
+  with open('cities.csv') as cities_file:
+    reader = csv.DictReader(cities_file)
+    for row in reader:
+      name = row['city']
+      lat = float(row['lat'])
+      lon = float(row['lng'])
+      city = City(name, lat, lon)
+      cities.append(city)
     
-    return cities
+  return cities
 
-cityreader(cities)
-
+cities = cityreader()
 # Print the list of cities (name, lat, lon), 1 record per line.
 for c in cities:
     print(c)
@@ -59,13 +79,33 @@ for c in cities:
 # Salt Lake City: (40.7774,-111.9301)
 
 # TODO Get latitude and longitude values from the user
+print("\n\n")
+lat1 = float(input("First Latitude: "))
+lon1 = float(input("First Longitude: "))
+lat2 = float(input("Secong Latitude: "))
+lon2 = float(input("Secong Longitude: "))
+
+class Point:
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+class Square:
+  def __init__(self, point1, point2):
+    self.point1 = Point(min(point1.x, point2.x), max(point1.y, point2.y))
+    self.point2 = Point(max(point1.x, point2.x), min(point1.y, point2.y))
+
+  def contains(self, point):
+    return point.x > self.point1.x and point.x < self.point2.x and point.y < self.point1.y and point.y > self.point2.y
 
 def cityreader_stretch(lat1, lon1, lat2, lon2, cities=[]):
   # within will hold the cities that fall within the specified region
-  within = []
-
-  # TODO Ensure that the lat and lon valuse are all floats
-  # Go through each city and check to see if it falls within 
-  # the specified coordinates.
+  square = Square(Point(lon1, lat1), Point(lon2, lat2))
+  within = [city for city in cities if city.falls_within(square)]
 
   return within
+
+result = cityreader_stretch(lat1, lon1, lat2, lon2, cities)
+print("\nResults:\n")
+for city in result:
+  print(city)
